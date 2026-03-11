@@ -1,17 +1,16 @@
 import os
-import oracle_db
+import oracledb
 from flask import Flask, jsonify, render_template_string
 
 app = Flask(__name__)
 
 
 def get_connection():
-    return oracle_db.connect(
+    return oracledb.connect(
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD"),
         dsn=os.environ.get("DB_DSN")
     )
-
 
 # Rota principal para mostrar os heróis
 @app.route('/')
