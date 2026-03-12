@@ -70,9 +70,9 @@ def processar():
         DECLARE
             v_dano NUMBER := 10;
         BEGIN
-            FOR r IN (SELECT id_heroi, hp_atual FROM RM566087.TB_HEROIS WHERE status = 'ATIVO') LOOP
-                IF r.hp_atual - v_dano <= 0 THEN
-                    UPDATE TB_HEROIS SET hp_atual = 0, status = 'CAÍDO' WHERE id_heroi = r.id_heroi;
+            FOR r IN (SELECT id_heroi, hp_atual FROM RMXXXXX.TB_HEROIS WHERE status = 'ATIVO') LOOP
+    IF r.hp_atual - v_dano <= 0 THEN
+        UPDATE RM566087.TB_HEROIS SET ...
                 ELSE
                     UPDATE TB_HEROIS SET hp_atual = hp_atual - v_dano WHERE id_heroi = r.id_heroi;
                 END IF;
@@ -89,5 +89,6 @@ def processar():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
