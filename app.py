@@ -26,7 +26,9 @@ def index():
         conn = get_connection()
         cursor = conn.cursor()
         # Seleciona os heróis da tabela que você criou no SQL Developer
-        cursor.execute("SELECT nome, classe, hp_atual, hp_max, status FROM TB_HEROIS ORDER BY id_heroi")
+       # Exemplo: se seu RM for RM99999
+
+        cursor.execute("SELECT nome, classe, hp_atual, hp_max, status FROM RM566087.TB_HEROIS ORDER BY nome")
         herois = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -87,3 +89,4 @@ def processar():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
