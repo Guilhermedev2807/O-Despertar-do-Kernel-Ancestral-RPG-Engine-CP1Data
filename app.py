@@ -2,6 +2,9 @@ import os
 import oracledb
 from flask import Flask, render_template_string
 
+if os.environ.get('DB_USER'):
+    oracledb.defaults.thin = True
+
 # 1. ATIVAÇÃO DO MODO LEVE (THIN MODE) - OBRIGATÓRIO PARA VERCEL
 oracledb.defaults.thin = True
 
@@ -88,3 +91,4 @@ def processar():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
