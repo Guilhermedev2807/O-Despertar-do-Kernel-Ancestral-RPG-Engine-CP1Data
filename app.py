@@ -2,18 +2,22 @@ import os
 import oracledb
 from flask import Flask, render_template_string
 
-# Força o modo THIN (Leve) antes de qualquer outra coisa
-# Isso resolve o erro DPI-1047 na Vercel
+# --- FORÇA O MODO THIN (LEVE) LOGO NO INÍCIO ---
+# Isso impede o erro DPI-1047 de acontecer na Vercel
 oracledb.defaults.thin = True
 
 app = Flask(__name__)
 
 def get_connection():
-    # Pega as credenciais das variáveis de ambiente da Vercel
+    # Coleta as variáveis configuradas na Vercel
+    user = os.environ.get("DB_USER")
+    password = os.environ.get("DB_PASSWORD")
+    dsn = os.environ.get("DB_DSN")
+    
     return oracledb.connect(
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD"),
-        dsn=os.environ.get("DB_DSN")
+        user=user,
+        password=password,
+        dsn=dsn
     )
 
 @app.route('/')
@@ -21,33 +25,45 @@ def index():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT nome, classe, hp_atual, hp_max, status FROM TB_HEROIS ORDER BY nome")
+        # Seleciona os heróis da tabela que você criou no SQL Developer
+        cursor.execute("SELECT nome, classe, hp_atual, hp_max, status FROM TB_HEROIS ORDER BY id_heroi")
         herois = cursor.fetchall()
         cursor.close()
         conn.close()
 
         html = """
-        <body style="font-family: sans-serif; padding: 20px;">
-            <h1>Mestre do Jogo - SQLgard</h1>
-            <hr>
-            <h3>Estado dos Heróis:</h3>
-            <ul>
-            {% for h in herois %}
-                <li>{{ h[0] }} ({{ h[1] }}) - HP: {{ h[2] }}/{{ h[3] }} - <b>{{ h[4] }}</b></li>
-            {% endfor %}
-            </ul>
-            <form action="/processar" method="post"><button type="submit">Próximo Turno</button></form>
+        <body style="font-family: sans-serif; padding: 20px; background-color: #f0f2f5;">
+            <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h1 style="color: #1a73e8; text-align: center;">⚔️ Mestre do Jogo - SQLgard</h1>
+                <hr>
+                <ul style="list-style: none; padding: 0;">
+                {% for h in herois %}
+                    <li style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <strong>{{ h[0] }}</strong> ({{ h[1] }}) <br>
+                        HP: {{ h[2] }}/{{ h[3] }} | 
+                        <span style="color: {{ 'red' if h[4] == 'CAÍDO' else 'green' }}; font-weight: bold;">{{ h[4] }}</span>
+                    </li>
+                {% endfor %}
+                </ul>
+                <form action="/processar" method="post" style="text-align: center; margin-top: 20px;">
+                    <button type="submit" style="background: #d93025; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        Próximo Turno (PL/SQL)
+                    </button>
+                </form>
+            </div>
         </body>
         """
         return render_template_string(html, herois=herois)
     except Exception as e:
-        return f"<h3>Erro de Conexão:</h3><p>{str(e)}</p>"
+        return f"<div style='color:red; padding:20px;'><h3>Erro de Conexão:</h3>{str(e)}</div>"
 
 @app.route('/processar', methods=['POST'])
 def processar():
     try:
         conn = get_connection()
         cursor = conn.cursor()
+        
+        # O seu Bloco PL/SQL exigido pelo professor
         plsql = """
         DECLARE
             v_dano NUMBER := 10;
@@ -65,9 +81,9 @@ def processar():
         cursor.execute(plsql)
         cursor.close()
         conn.close()
-        return "Turno Processado! <a href='/'>Voltar</a>"
+        return "<h3>Turno Processado com Sucesso!</h3><a href='/'>Voltar para a arena</a>"
     except Exception as e:
-        return f"Erro no PL/SQL: {str(e)}"
+        return f"<div style='color:red;'>Erro no Processamento: {str(e)}</div>"
 
 if __name__ == '__main__':
     app.run(debug=True)
